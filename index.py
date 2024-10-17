@@ -117,31 +117,20 @@ for empresa, metodo, cnpj in zip(empresas, metodos, pxacnpj):
                     iframe = WebDriverWait(driver, 10).until(
                         EC.presence_of_element_located((By.CSS_SELECTOR, "iframe[src*='hcaptcha']"))
                     )
-                    driver.switch_to.frame(iframe)
-
-                    # Espere até que o textarea esteja presente e defina seu valor
-                    textarea = WebDriverWait(driver, 10).until(
-                        EC.presence_of_element_located((By.XPATH, '//*[@id="h-captcha-response-0l8o8vyy9am"]'))
-                    )
-                    print('achouuuuuuu')
-                    textarea.send_keys(g_response)
-
-                    # Volte ao contexto padrão da página
-                    driver.switch_to.default_content()
-
-                    # Submeta o formulário
-                    submit_button = WebDriverWait(driver, 10).until(
-                        EC.element_to_be_clickable((By.CLASS_NAME, "button-submit"))  # Ajuste o seletor conforme necessário
-                    )
-                    submit_button.click()
 
                 except Exception as e:
                     print("Erro ao injetar ou submeter a resposta do captcha:", e)
                 
                 if g_response != 0:
-                    print("g-response: "+g_response)
-                    print("user-agent, use it to post the form: ", solver.get_user_agent())
-                    print("respkey, if any: ", solver.get_respkey())
+                    # print("g-response: "+g_response)
+                    # print("user-agent, use it to post the form: ", solver.get_user_agent())
+                    # print("respkey, if any: ", solver.get_respkey())
+                    textarea = driver.find_element(By.CSS_SELECTOR, 'textarea[name="h-captcha-response"]')
+                    textarea_id = textarea.get_attribute('id')
+                    print("ID extraído:", textarea_id)
+                    driver.execute_script(f"document.getElementById('{textarea_id}').innerHTML = '{g_response}'")
+                    time.sleep(50)
+                    driver.find_element(By.CLASS_NAME, 'button-submit button').click()
                 else:
                     print("task finished with error "+solver.error_code)
         else:
