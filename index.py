@@ -21,6 +21,7 @@ from anticaptchaofficial.hcaptchaproxyless import *
 
 # Configurar o resolvedor de hCaptcha
 
+profile_path = r"C:\Users\ADM\AppData\Local\Google\Chrome\User Data\Default" 
     
 empresas = nomeEmpresas()
 metodos = nomeMetodo()
@@ -32,9 +33,12 @@ for empresa, metodo, cnpj in zip(empresas, metodos, pxacnpj):
             certificado = 'FRANCISCO ORLANDO SILVEIRA PEREIRA'
             
         service = Service(ChromeDriverManager().install())
+           # Configurações do Chrome com o perfil
+        options = uc.ChromeOptions()
+        options.add_argument(f"user-data-dir={profile_path}")
 
         # Inicia o navegador
-        driver = uc.Chrome(service=service)
+        driver = uc.Chrome(service=service, options=options)
         driver.implicitly_wait(10)
         
     
@@ -65,76 +69,81 @@ for empresa, metodo, cnpj in zip(empresas, metodos, pxacnpj):
         textoCert = pytesseract.image_to_string(Image.open("cert.png"))
         print(textoCert)
         
-        if textoCert != 'Selecione um certificado\n':
-        # Verifique se o iframe do captcha está presente
-            captcha_iframe = WebDriverWait(driver, 10).until(
-            EC.presence_of_element_located((By.CSS_SELECTOR, "iframe[src*='hcaptcha']"))
-            )
+        # if textoCert != 'Selecione um certificado\n':
+        # # Verifique se o iframe do captcha está presente
+        #     captcha_iframe = WebDriverWait(driver, 10).until(
+        #     EC.presence_of_element_located((By.CSS_SELECTOR, "iframe[src*='hcaptcha']"))
+        #     )
 
-            # Se o iframe for encontrado, resolva o captcha
-            if captcha_iframe:
-                print("Captcha detectado, iniciando solução...")
-                time.sleep(5)
-                # Localize o iframe do hCaptcha
-                # Localize o iframe do hCaptcha
-                script_element = driver.find_element(By.XPATH, '//*[@id="loginData"]/script[2]')
-                inner_html = script_element.get_attribute("innerHTML")
+        #     # Se o iframe for encontrado, resolva o captcha
+        #     if captcha_iframe:
+        #         print("Captcha detectado, iniciando solução...")
+        #         time.sleep(5)
+        #         # Localize o iframe do hCaptcha
+        #         # Localize o iframe do hCaptcha
+        #         script_element = driver.find_element(By.XPATH, '//*[@id="loginData"]/script[2]')
+        #         inner_html = script_element.get_attribute("innerHTML")
                 
-                # Use uma expressão regular para encontrar a sitekey
-                match = re.search(r'sitekey:\s*"([a-zA-Z0-9-]+)"', inner_html)
-                if match:
-                    site_key = match.group(1)
-                    print("Site Key encontrada:", site_key)
-                else:
-                    print("Site Key não encontrada no script.")
-                # Configurar o resolvedor de hCaptcha
-                solver = hCaptchaProxyless()
-                solver.set_verbose(1)
-                solver.set_key("e6151c3f9b60917d81333ea30f5ca6f6")
-                solver.set_website_url(driver.current_url)
-                solver.set_website_key(site_key)
+        #         # Use uma expressão regular para encontrar a sitekey
+        #         match = re.search(r'sitekey:\s*"([a-zA-Z0-9-]+)"', inner_html)
+        #         if match:
+        #             site_key = match.group(1)
+        #             print("Site Key encontrada:", site_key)
+        #         else:
+        #             print("Site Key não encontrada no script.")
+        #         # Configurar o resolvedor de hCaptcha
+        #         solver = hCaptchaProxyless()
+        #         solver.set_verbose(1)
+        #         solver.set_key("e6151c3f9b60917d81333ea30f5ca6f6")
+        #         solver.set_website_url(driver.current_url)
+        #         solver.set_website_key(site_key)
 
-                # tell API that Hcaptcha is invisible
-                #solver.set_is_invisible(1)
+               
+        #         solver.set_soft_id(0)
 
-                # tell API that Hcaptcha is Enterprise
-                #solver.set_is_enterprise(1)
+        #         g_response = solver.solve_and_return_solution()
+        #         print('G-response:', g_response)
+        #         try:
+        #             # Localize e mude para o iframe que contém o hCaptcha
+        #             iframe = WebDriverWait(driver, 10).until(
+        #                 EC.presence_of_element_located((By.CSS_SELECTOR, "iframe[src*='hcaptcha']"))
+        #             )
 
-                # set here parameters like rqdata, sentry, apiEndpoint, endpoint, reportapi, assethost, imghost
-                #solver.set_enterprise_payload({
-                #    "rqdata": "rq data value from target website",
-                #    "sentry": True
-                #})
-
-                # Specify softId to earn 10% commission with your app.
-                # Get your softId here: https://anti-captcha.com/clients/tools/devcenter
-                solver.set_soft_id(0)
-
-                g_response = solver.solve_and_return_solution()
-                print('G-response:', g_response)
-                try:
-                    # Localize e mude para o iframe que contém o hCaptcha
-                    iframe = WebDriverWait(driver, 10).until(
-                        EC.presence_of_element_located((By.CSS_SELECTOR, "iframe[src*='hcaptcha']"))
-                    )
-
-                except Exception as e:
-                    print("Erro ao injetar ou submeter a resposta do captcha:", e)
+        #         except Exception as e:
+        #             print("Erro ao injetar ou submeter a resposta do captcha:", e)
                 
-                if g_response != 0:
-                    # print("g-response: "+g_response)
-                    # print("user-agent, use it to post the form: ", solver.get_user_agent())
-                    # print("respkey, if any: ", solver.get_respkey())
-                    textarea = driver.find_element(By.CSS_SELECTOR, 'textarea[name="h-captcha-response"]')
-                    textarea_id = textarea.get_attribute('id')
-                    print("ID extraído:", textarea_id)
-                    driver.execute_script(f"document.getElementById('{textarea_id}').innerHTML = '{g_response}'")
-                    time.sleep(50)
-                    driver.find_element(By.CLASS_NAME, 'button-submit button').click()
-                else:
-                    print("task finished with error "+solver.error_code)
-        else:
-            print('Sem Captcha')
+        #         if g_response != 0:
+        #             textarea = driver.find_element(By.CSS_SELECTOR, 'textarea[name="h-captcha-response"]')
+        #             textarea_id = textarea.get_attribute('id')
+        #             print("ID extraído:", textarea_id)
+        #             driver.execute_script(f"document.getElementById('{textarea_id}').style.display = 'flex';")
+                    
+        #             time.sleep(200)
+                    
+        #             areatext_click = driver.find_element(By.ID, f'{textarea_id}')
+        #             textarea.send_keys(g_response)
+                    
+        #             # driver.execute_script("arguments[0].click();", areatext_click)
+                    
+        #             # driver.execute_script(f"document.getElementsByTagName('iframe').data-hcaptcha-response = '{g_response}'")
+        #             iframe = driver.find_element(By.TAG_NAME, "iframe")
+        #             driver.switch_to.frame(iframe)
+
+        #             # Use execute_script para modificar o atributo do elemento desejado
+        #             driver.execute_script("""
+        #                 var iframe = document.querySelector('iframe');
+        #                 iframe.setAttribute('data-hcaptcha-response', arguments[0]);
+        #             """, g_response)
+
+        #             # Volte para o contexto padrão da página
+        #             driver.switch_to.default_content()
+                    
+        #             time.sleep(200)
+        #             driver.find_element(By.XPATH, '/html/body/div/div[3]/div[3]').click()
+        #         else:
+        #             print("task finished with error "+solver.error_code)
+        # else:
+        #     print('Sem Captcha')
             
             
         time.sleep(5)
